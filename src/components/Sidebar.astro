@@ -1,0 +1,92 @@
+---
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const recent = [...posts].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 5);
+
+// collect categories/tags from frontmatter — dynamic, no hard-coded values
+const allTags = [...new Set(posts.flatMap((p: any) => p.data.tags ?? []))].sort((a, b) => a.localeCompare(b));
+const categories = allTags.slice(0, 12);
+const fallbackCats = ["expository", "math.CO", "math.NT", "guest blog", "opinion", "polymath", "teaching"];
+const cats = categories.length ? categories : fallbackCats;
+// tag cloud is the full dynamic set
+const tagCloud = allTags;
+
+// archives by month
+const archives = [...posts]
+	.reduce((acc: Record<string, number>, p) => {
+		const d = p.data.pubDate;
+		const k = d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+		acc[k] = (acc[k] || 0) + 1;
+		return acc;
+	}, {});
+const archiveEntries = Object.entries(archives)
+	.sort((a, b) => new Date(b[0]).valueOf() - new Date(a[0]).valueOf())
+	.slice(0, 10);
+---
+
+<aside class="sidebar" aria-label="Sidebar">
+	<div class="widget">
+		<h3 class="widget-title">Search</h3>
+		<div class="widget-body">
+			<form class="search-box" action="/blog/" method="get" role="search">
+				<label class="sr-only" for="sidebar-search">Search</label>
+				<input id="sidebar-search" type="search" name="q" placeholder="Search…" />
+				<button type="submit">Go</button>
+			</form>
+		</div>
+	</div>
+
+	<div class="widget">
+		<h3 class="widget-title">Recent Posts</h3>
+		<div class="widget-body">
+			<ul>
+				{recent.map((p) => (
+					<li><a href={`/blog/${p.id}/`}>{p.data.title}</a></li>
+				))}
+			</ul>
+		</div>
+	</div>
+
+	<div class="widget">
+		<h3 class="widget-title">Categories</h3>
+		<div class="widget-body">
+			<ul>
+				{cats.map((c) => (
+					<li><a href={`/blog/?tag=${encodeURIComponent(c)}`}>{c}</a></li>
+				))}
+			</ul>
+		</div>
+	</div>
+
+	<div class="widget">
+		<h3 class="widget-title">Archives</h3>
+		<div class="widget-body">
+			<ul>
+				{archiveEntries.length ? archiveEntries.map(([label, count]) => (
+					<li><a href="/blog/">{label}</a> <span style="color: var(--text-faint)">({count})</span></li>
+				)) : (
+					<li><a href="/blog/">September 2026 (5)</a></li>
+					<li><a href="/blog/">August 2026 (6)</a></li>
+					<li><a href="/blog/">July 2026 (9)</a></li>
+				)}
+			</ul>
+		</div>
+	</div>
+
+	<div class="widget">
+		<h3 class="widget-title">Tags</h3>
+		<div class="widget-body">
+			<div class="tag-cloud">
+				{tagCloud.length ? (
+					tagCloud.map((t) => (
+						<a href={`/blog/?tag=${encodeURIComponent(t)}`}>{t}</a>
+					))
+				) : (
+					<span style="color: var(--text-faint); font-size: 10px;">No tags yet</span>
+				)}
+			</div>
+		</div>
+	</div>
+
+</aside>

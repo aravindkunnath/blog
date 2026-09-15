@@ -1,0 +1,61 @@
+---
+---
+
+<button
+	id="theme-toggle"
+	class="theme-toggle"
+	type="button"
+	aria-label="Toggle theme"
+	title="Toggle light / dark theme"
+>
+	<!-- sun icon (shown in light mode) -->
+	<svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+		<circle cx="12" cy="12" r="4"></circle>
+		<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+	</svg>
+	<!-- moon icon (shown in dark mode) -->
+	<svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+		<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+	</svg>
+	<span class="sr-only">Toggle theme</span>
+</button>
+
+<script is:inline>
+	(function () {
+		const STORAGE_KEY = "theme";
+		const toggle = document.getElementById("theme-toggle");
+
+		function getPreferred() {
+			const stored = localStorage.getItem(STORAGE_KEY);
+			if (stored === "light" || stored === "dark") return stored;
+			return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+		}
+
+		function apply(theme) {
+			document.documentElement.setAttribute("data-theme", theme);
+			if (toggle) {
+				const label = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+				toggle.setAttribute("aria-label", label);
+				toggle.setAttribute("title", label);
+			}
+		}
+
+		// sync button state on load (BaseHead already set data-theme)
+		apply(getPreferred());
+
+		if (toggle) {
+			toggle.addEventListener("click", () => {
+				const current = document.documentElement.getAttribute("data-theme");
+				const next = current === "dark" ? "light" : "dark";
+				localStorage.setItem(STORAGE_KEY, next);
+				apply(next);
+			});
+		}
+
+		window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+			if (!localStorage.getItem(STORAGE_KEY)) {
+				apply(e.matches ? "dark" : "light");
+			}
+		});
+	})();
+</script>

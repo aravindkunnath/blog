@@ -1,0 +1,49 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import Sidebar from "../components/Sidebar.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <BaseHead
+            title={`Projects | ${SITE_TITLE}`}
+            description={SITE_DESCRIPTION}
+        />
+    </head>
+    <body>
+        <div class="site-wrapper">
+            <Header />
+            <div class="content-wrap">
+                <div class="main-column">
+                    <article class="prose">
+                        <h1>Projects</h1>
+                        <p>
+                            Selected work and experiments. More details coming
+                            soon.
+                        </p>
+                        <ul>
+                            <li>
+                                <a href="https://github.com/aravindkunnath/xrest">
+                                    XRest
+                                </a>{" "}
+                                — a service first REST Client
+                            </li>
+                            <li>
+                                <a href="https://github.com/aravindkunnath">
+                                    GitHub
+                                </a>{" "}
+                                — code and open-source
+                            </li>
+                        </ul>
+                    </article>
+                </div>
+                <Sidebar />
+            </div>
+            <Footer />
+        </div>
+    </body>
+</html>

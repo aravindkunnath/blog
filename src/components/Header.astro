@@ -1,0 +1,31 @@
+---
+import { SITE_TITLE } from '../consts';
+import ThemeToggle from './ThemeToggle.astro';
+
+const pathname = Astro.url.pathname;
+const isActive = (href: string) => pathname === href || (href !== "/" && pathname.startsWith(href));
+---
+
+<header class="site-header">
+	<nav class="nav-bar" aria-label="Primary">
+		<div class="nav-left">
+			<a href="/" class="brand" aria-label="Home">{SITE_TITLE}</a>
+			<div class="nav-links">
+				<a href="/blog" class={isActive("/blog") ? "active" : ""}>Posts</a>
+				<a href="/projects" class={isActive("/projects") ? "active" : ""}>Projects</a>
+				<a href="/about" class={isActive("/about") ? "active" : ""}>About</a>
+			</div>
+		</div>
+		<div class="nav-actions">
+			<a href="/rss.xml" class="rss-link" aria-label="Subscribe to RSS feed" title="RSS feed">
+				<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+					<circle cx="6.18" cy="17.82" r="2.18"></circle>
+					<path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83C19.56 11.41 12.59 4.44 4 4.44z"></path>
+					<path d="M4 10.1v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"></path>
+				</svg>
+				<span class="sr-only">Subscribe to feed</span>
+			</a>
+			<ThemeToggle />
+		</div>
+	</nav>
+</header>

@@ -1,0 +1,137 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+import Sidebar from '../components/Sidebar.astro';
+
+type Props = CollectionEntry<'blog'>['data'];
+
+const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.props;
+---
+
+<html lang="en">
+	<head>
+		<BaseHead title={title} description={description} />
+		<style>
+			.hero-image img {
+				display: block;
+				width: 100%;
+				height: auto;
+				border: 1px solid var(--border);
+				padding: 3px;
+				background: var(--surface);
+				margin-bottom: 14px;
+			}
+			.post-title {
+				font-family: var(--font-body);
+				font-size: 26px;
+				font-weight: 700;
+				line-height: 1.25;
+				margin: 0 0 6px;
+				color: var(--text);
+			}
+			.post-meta-single {
+				font-family: var(--font-ui);
+				font-size: 9px;
+				color: var(--text-faint);
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				border-bottom: 1px dotted var(--border-strong);
+				padding-bottom: 10px;
+				margin-bottom: 18px;
+			}
+			.post-meta-single a { color: var(--text-faint); }
+			.post-meta-single a:hover { color: var(--accent); }
+			.last-updated-on { font-style: italic; margin-top: 4px; }
+		</style>
+	</head>
+
+	<body>
+		<div class="site-wrapper">
+			<Header />
+			<div class="content-wrap">
+				<div class="main-column">
+					<article class="prose">
+						{heroImage && (
+							<div class="hero-image">
+								<Image width={640} height={320} src={heroImage} alt="" />
+							</div>
+						)}
+						<h1 class="post-title">{title}</h1>
+						<div class="post-meta-single">
+							<FormattedDate date={pubDate} /> · in <a href="/blog/">blog</a> | Tags: {
+								tags && tags.length > 0 ? (
+									tags.map((tag: string, i: number) => (
+										<>
+											<a href="/blog/">{tag}</a>{i < tags.length - 1 ? ", " : ""}
+										</>
+									))
+								) : (
+									<a href="/blog/">general</a>
+								)
+							} | by Aravind
+							{updatedDate && (
+								<div class="last-updated-on">
+									Last updated on <FormattedDate date={updatedDate} />
+								</div>
+							)}
+						</div>
+						<slot />
+						<hr />
+						<p style="font-family: var(--font-ui); font-size: 9px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em;">
+							<a href="/blog/">« Previous</a> · <a href="/blog/">Next »</a> &nbsp;|&nbsp; <a href="#comments">Comments</a>
+						</p>
+					</article>
+					<div id="comments" class="giscus-wrapper" style="margin-top: 32px; border-top: 1px solid var(--border); padding-top: 16px;">
+						<div class="giscus"></div>
+					</div>
+					<script is:inline>
+						(function() {
+							const GISCUS_REPO = "aravindkunnath/aravindkunnath.github.io";
+							const GISCUS_REPO_ID = "R_kgDOUZr3ZA";
+							const GISCUS_CATEGORY = "General";
+							const GISCUS_CATEGORY_ID = "DIC_kwDOUZr3ZM4DFoYD";
+							function getTheme() {
+								return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+							}
+							function createGiscus(theme) {
+								const s = document.createElement("script");
+								s.src = "https://giscus.app/client.js";
+								s.async = true;
+								s.crossOrigin = "anonymous";
+								s.setAttribute("data-repo", GISCUS_REPO);
+								s.setAttribute("data-repo-id", GISCUS_REPO_ID);
+								s.setAttribute("data-category", GISCUS_CATEGORY);
+								s.setAttribute("data-category-id", GISCUS_CATEGORY_ID);
+								s.setAttribute("data-mapping", "pathname");
+								s.setAttribute("data-strict", "0");
+								s.setAttribute("data-reactions-enabled", "1");
+								s.setAttribute("data-emit-metadata", "0");
+								s.setAttribute("data-input-position", "top");
+								s.setAttribute("data-theme", theme);
+								s.setAttribute("data-lang", "en");
+								s.setAttribute("data-loading", "lazy");
+								document.querySelector(".giscus").appendChild(s);
+							}
+							createGiscus(getTheme());
+							// sync on theme toggle / system change
+							const mo = new MutationObserver(() => {
+								const iframe = document.querySelector("iframe.giscus-frame");
+								const theme = getTheme();
+								if (iframe) {
+									iframe.contentWindow.postMessage({ giscus: { setConfig: { theme } } }, "https://giscus.app");
+								}
+							});
+							mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+						})();
+					</script>
+				</div>
+				<Sidebar />
+			</div>
+			<Footer />
+		</div>
+	</body>
+</html>

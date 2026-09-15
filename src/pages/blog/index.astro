@@ -1,0 +1,95 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<div class="site-wrapper">
+			<Header />
+			<div class="content-wrap">
+				<div class="main-column">
+					<p id="search-status" style="display:none; font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); border: 1px solid var(--border); background: var(--surface-alt); padding: 8px 10px; margin: 0 0 14px;"></p>
+					<ul class="post-list" id="post-list">
+						{
+							posts.map((post) => (
+								<li class="post-entry" data-title={(post.data.title + " " + post.data.description).toLowerCase()} data-tags={(post.data.tags ?? []).join(",").toLowerCase()}>
+									<h2><a href={`/blog/${post.id}/`}>{post.data.title}</a></h2>
+									<div class="post-meta">
+										<FormattedDate date={post.data.pubDate} /> in <a href="/blog/">blog</a> | Tags: {
+											post.data.tags && post.data.tags.length > 0 ? (
+												post.data.tags.map((tag: string, i: number) => (
+													<>
+														<a href={`/blog/?tag=${encodeURIComponent(tag)}`}>{tag}</a>{i < post.data.tags.length - 1 ? ", " : ""}
+													</>
+												))
+											) : (
+												<a href="/blog/">general</a>
+											)
+										} | by Aravind | <a href={`/blog/${post.id}/#comments`}>comments</a>
+									</div>
+									<div class="post-excerpt">
+										<p>{post.data.description}</p>
+									</div>
+									<div class="read-more"><a href={`/blog/${post.id}/`}>Read the rest of this entry »</a></div>
+								</li>
+							))
+						}
+					</ul>
+					<p id="no-results" style="display:none; font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); margin-top: 16px;">No posts found. <a href="/blog/">Clear filter</a></p>
+				</div>
+				<Sidebar />
+			</div>
+			<Footer />
+		</div>
+		<script is:inline>
+			(function() {
+				const params = new URLSearchParams(window.location.search);
+				const q = (params.get('q') || '').trim().toLowerCase();
+				const tag = (params.get('tag') || '').trim().toLowerCase();
+				// populate search box if present
+				const searchInput = document.getElementById('sidebar-search');
+				if (searchInput && q) searchInput.value = params.get('q') || '';
+				if (!q && !tag) return;
+				const posts = document.querySelectorAll('#post-list .post-entry');
+				let visible = 0;
+				posts.forEach((el) => {
+					const hay = (el.getAttribute('data-title') || '') + ' ' + (el.getAttribute('data-tags') || '');
+					const matchQ = !q || hay.includes(q);
+					const tags = (el.getAttribute('data-tags') || '').split(',').map(s => s.trim());
+					const matchTag = !tag || tags.includes(tag);
+					const show = matchQ && matchTag;
+					el.style.display = show ? '' : 'none';
+					if (show) visible++;
+				});
+				const status = document.getElementById('search-status');
+				const noResults = document.getElementById('no-results');
+				if (status) {
+					let parts = [];
+					if (q) parts.push(`search "${params.get('q')}"`);
+					if (tag) parts.push(`tag "${params.get('tag')}"`);
+					status.textContent = `Filtered by ${parts.join(' + ')} — ${visible} result${visible !== 1 ? 's' : ''} — `;
+					const clear = document.createElement('a');
+					clear.href = '/blog/';
+					clear.textContent = 'clear';
+					status.appendChild(clear);
+					status.style.display = '';
+				}
+				if (noResults) noResults.style.display = visible === 0 ? '' : 'none';
+			})();
+		</script>
+	</body>
+</html>
